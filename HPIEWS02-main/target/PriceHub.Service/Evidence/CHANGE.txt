@@ -1,0 +1,2 @@
+Release: PriceHub Service v4 (No CommonProtos)
+Scope: SOAP → gRPC/REST endpoints

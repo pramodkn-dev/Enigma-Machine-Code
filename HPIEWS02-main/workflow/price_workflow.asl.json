@@ -1,0 +1,50 @@
+{
+  "Comment": "Illustrative PriceHub workflow",
+  "StartAt": "Validate",
+  "States": {
+    "Validate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "Method": "GET",
+        "Endpoint": "http://pricehub:8080/health"
+      },
+      "Next": "Calculate"
+    },
+    "Calculate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "Method": "GET",
+        "Endpoint": "http://pricehub:8080/v1/prices",
+        "QueryParameters": {
+          "sku.$": "$.sku",
+          "market.$": "$.market"
+        }
+      },
+      "Next": "Persist"
+    },
+    "Persist": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "Method": "POST",
+        "Endpoint": "http://pricehub:8080/v1/priceJobs",
+        "Body": {
+          "market.$": "$.market",
+          "skus.$": "$.skus"
+        }
+      },
+      "Next": "Notify"
+    },
+    "Notify": {
+      "Type": "Pass",
+      "Result": "Notification queued",
+      "Next": "Audit"
+    },
+    "Audit": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

@@ -1,0 +1,1 @@
+package com.hp.ews; import jakarta.xml.ws.Endpoint; import com.hp.ews.service.impl.PriceServiceImpl; public class Bootstrap { public static void main(String[] a){ String url="http://0.0.0.0:8088/PriceService"; Endpoint.publish(url,new PriceServiceImpl()); System.out.println("EWS SOAP at: "+url+"?wsdl"); }}

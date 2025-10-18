@@ -1,0 +1,1 @@
+package com.hp.ews.model; import jakarta.xml.ws.WebFault; @WebFault(name="EwsFault", targetNamespace="http://hp.com/ews/price/1") public class EwsFault extends Exception { public String code; public String correlationId; public EwsFault(String c,String m,String id){ super(m); code=c; correlationId=id; } }

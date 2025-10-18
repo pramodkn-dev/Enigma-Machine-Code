@@ -1,0 +1,9 @@
+{
+  "tests": [
+    {
+      "id": "SIT-001",
+      "name": "Trigger job returns QUEUED",
+      "status": "PASS"
+    }
+  ]
+}

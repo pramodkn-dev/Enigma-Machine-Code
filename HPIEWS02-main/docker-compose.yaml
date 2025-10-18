@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  oracle:
+    image: gvenzl/oracle-xe:21
+    container_name: pricehub-oracle
+    environment:
+      ORACLE_PASSWORD: "oracle"
+      APP_USER: "PRICEHUB"
+      APP_USER_PASSWORD: "pricehub"
+    ports: ["1521:1521"]
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "echo 'select 1 from dual;' | sqlplus -s system/oracle@//localhost:1521/XEPDB1 | grep -q 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 25
+    volumes:
+      - ./sql:/container-entrypoint-initdb.d:ro
+
+  pricehub:
+    build:
+      context: ./target/PriceHub.Service
+      dockerfile: ./Dockerfile
+    container_name: pricehub
+    environment:
+      PRICEHUB_ORA: "User Id=PRICEHUB;Password=pricehub;Data Source=oracle:1521/XEPDB1"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    ports: ["8080:8080"]
