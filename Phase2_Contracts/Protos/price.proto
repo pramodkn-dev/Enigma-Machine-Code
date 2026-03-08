@@ -1,0 +1,136 @@
+// PriceService gRPC Contract
+// Generated from legacy SOAP EWS PriceService
+// Phase 2: Contract Generation for SOAP-to-gRPC Migration
+
+syntax = "proto3";
+
+package pricehub.v1;
+
+import "google/api/annotations.proto";
+
+option csharp_namespace = "PriceHub.Service.Protos";
+option java_package = "com.hp.pricehub.v1";
+option java_multiple_files = true;
+option go_package = "github.com/hp/pricehub/v1;pricehubv1";
+
+// PriceFilter - Mirrors SOAP PriceRequest
+// Used to filter price queries by SKU, market, currency, and effective date.
+message PriceFilter {
+  // Product SKU identifier (required)
+  // Maps to: SOAP PriceRequest.sku
+  string sku = 1;
+
+  // Market code (optional, e.g., "US", "EU")
+  // Maps to: SOAP PriceRequest.market
+  string market = 2;
+
+  // Currency code (optional, e.g., "USD", "EUR")
+  // Maps to: SOAP PriceRequest.currency
+  string currency = 3;
+
+  // Effective date filter in ISO-8601 format (optional, e.g., "2025-01-01")
+  // Maps to: SOAP PriceRequest.effectiveDate
+  string effective_date = 4;
+}
+
+// Price - Mirrors SOAP PriceResponse
+// Represents a single price record returned from the service.
+message Price {
+  // Product SKU identifier
+  // Maps to: SOAP PriceResponse.sku
+  string sku = 1;
+
+  // Currency code (e.g., "USD")
+  // Maps to: SOAP PriceResponse.currency
+  string currency = 2;
+
+  // Price value as string to preserve decimal precision
+  // Maps to: SOAP PriceResponse.price
+  // Note: Stored as string to avoid floating-point precision issues.
+  //       Original Oracle column: NUMBER(18,4)
+  string price = 3;
+
+  // Effective date in ISO-8601 format (e.g., "2025-01-01")
+  // Maps to: SOAP PriceResponse.effectiveDate
+  string effective_date = 4;
+}
+
+// PriceList - Mirrors SOAP GetPriceResponse (unbounded list)
+// Container for multiple Price records.
+message PriceList {
+  repeated Price prices = 1;
+}
+
+// Error - Mirrors SOAP EwsFault
+// Standard error message for fault responses.
+message Error {
+  // Error code (e.g., "ERR-001")
+  // Maps to: SOAP EwsFault.code
+  string code = 1;
+
+  // Human-readable error message
+  // Maps to: SOAP EwsFault.message (Exception.getMessage())
+  string message = 2;
+
+  // Correlation ID for request tracing
+  // Maps to: SOAP EwsFault.correlationId
+  string correlation_id = 3;
+}
+
+// TriggerJobRequest - Mirrors SOAP SubmitPriceJob input
+// Request to trigger a background price calculation job.
+message TriggerJobRequest {
+  // Job specification or market identifier
+  // Maps to: SOAP SubmitPriceJob.market parameter
+  // Note: Original SOAP operation accepted a market string;
+  //       this field can be extended to a structured message if needed.
+  string job_spec = 1;
+}
+
+// TriggerJobResponse - Mirrors SOAP SubmitPriceJob return value
+// Response containing the accepted job identifier.
+message TriggerJobResponse {
+  // Generated job ID (e.g., "JOB-550e8400-e29b-41d4-a716-446655440000")
+  // Maps to: SOAP SubmitPriceJob return value
+  string accepted_job_id = 1;
+}
+
+// PriceService - gRPC service definition
+// Mirrors SOAP PriceService interface with HTTP/REST annotations for JSON transcoding.
+//
+// SOAP Service: http://hp.com/ews/price/1
+// SOAP Endpoint: http://host:8088/PriceService
+service PriceService {
+  // StreamPrices - Server-streaming RPC
+  // Retrieves prices matching the specified filter criteria.
+  // Results are streamed as individual Price messages.
+  //
+  // SOAP Equivalent: GetPrice operation
+  // SOAP Input: PriceRequest
+  // SOAP Output: List<PriceResponse>
+  //
+  // HTTP Mapping: GET /v1/prices
+  // Query parameters are automatically mapped from PriceFilter fields.
+  rpc StreamPrices(PriceFilter) returns (stream Price) {
+    option (google.api.http) = {
+      get: "/v1/prices"
+    };
+  }
+
+  // TriggerPriceJob - Unary RPC
+  // Triggers a background price calculation/refresh job.
+  // Returns an accepted job ID for tracking.
+  //
+  // SOAP Equivalent: SubmitPriceJob operation
+  // SOAP Input: String (market)
+  // SOAP Output: String (jobId)
+  //
+  // HTTP Mapping: POST /v1/priceJobs
+  // Request body contains TriggerJobRequest as JSON.
+  rpc TriggerPriceJob(TriggerJobRequest) returns (TriggerJobResponse) {
+    option (google.api.http) = {
+      post: "/v1/priceJobs"
+      body: "*"
+    };
+  }
+}
