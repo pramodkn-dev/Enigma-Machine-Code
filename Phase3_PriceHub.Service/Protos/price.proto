@@ -1,0 +1,62 @@
+// PriceService gRPC Contract
+// Generated from legacy SOAP EWS PriceService
+// Phase 2: Contract Generation for SOAP-to-gRPC Migration
+
+syntax = "proto3";
+
+package pricehub.v1;
+
+import "google/api/annotations.proto";
+
+option csharp_namespace = "Pricehub.V1";
+
+// PriceFilter - Mirrors SOAP PriceRequest
+message PriceFilter {
+  string sku = 1;
+  string market = 2;
+  string currency = 3;
+  string effective_date = 4;
+}
+
+// Price - Mirrors SOAP PriceResponse
+message Price {
+  string sku = 1;
+  string currency = 2;
+  string price = 3;
+  string effective_date = 4;
+}
+
+// Error - Mirrors SOAP EwsFault
+message Error {
+  string code = 1;
+  string message = 2;
+  string correlation_id = 3;
+}
+
+// TriggerJobRequest - Mirrors SOAP SubmitPriceJob input
+message TriggerJobRequest {
+  string job_spec = 1;
+}
+
+// TriggerJobResponse - Mirrors SOAP SubmitPriceJob return value
+message TriggerJobResponse {
+  string accepted_job_id = 1;
+}
+
+// PriceService - gRPC service with HTTP/REST annotations
+service PriceService {
+  // StreamPrices - Server-streaming RPC (maps to SOAP GetPrice)
+  rpc StreamPrices(PriceFilter) returns (stream Price) {
+    option (google.api.http) = {
+      get: "/v1/prices"
+    };
+  }
+
+  // TriggerPriceJob - Unary RPC (maps to SOAP SubmitPriceJob)
+  rpc TriggerPriceJob(TriggerJobRequest) returns (TriggerJobResponse) {
+    option (google.api.http) = {
+      post: "/v1/priceJobs"
+      body: "*"
+    };
+  }
+}
