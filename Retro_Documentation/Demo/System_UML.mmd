@@ -1,0 +1,158 @@
+```mermaid
+classDiagram
+    direction TB
+
+    %% Service Layer
+    class Bootstrap {
+        +main(String[] args)
+    }
+
+    class PriceService {
+        <<interface>>
+        +getPrice(PriceRequest) List~PriceResponse~
+        +submitPriceJob(String market) String
+    }
+
+    class PriceServiceImpl {
+        +getPrice(PriceRequest) List~PriceResponse~
+        +submitPriceJob(String market) String
+    }
+
+    %% Model Layer
+    class PriceRequest {
+        +String sku
+        +String market
+        +String currency
+        +String effectiveDate
+    }
+
+    class PriceResponse {
+        +String sku
+        +String currency
+        +String price
+        +String effectiveDate
+    }
+
+    class EwsFault {
+        +String code
+        +String correlationId
+        +EwsFault(code, message, id)
+    }
+
+    %% Data Access Layer
+    class OracleDao {
+        -String conn
+        +OracleDao(String conn)
+        +findPrices(String sku, String market) List~PriceResponse~
+    }
+
+    %% Database Tables
+    class LIST_PRICE {
+        <<table>>
+        +VARCHAR2 ID PK
+        +VARCHAR2 SKU
+        +VARCHAR2 MARKET
+        +CHAR CURRENCY
+        +NUMBER PRICE
+        +DATE EFFECTIVE_DATE
+    }
+
+    class PRICE_JOB {
+        <<table>>
+        +VARCHAR2 JOB_ID PK
+        +VARCHAR2 MARKET
+        +TIMESTAMP REQUESTED_AT
+        +VARCHAR2 STATUS
+    }
+
+    %% Relationships
+    Bootstrap --> PriceServiceImpl : publishes
+    PriceServiceImpl ..|> PriceService : implements
+    PriceService ..> PriceRequest : uses
+    PriceService ..> PriceResponse : returns
+    PriceService ..> EwsFault : throws
+    PriceServiceImpl --> OracleDao : uses
+    OracleDao --> LIST_PRICE : queries
+    PriceServiceImpl --> PRICE_JOB : inserts
+```
+
+## Component Diagram
+
+```mermaid
+flowchart TB
+    subgraph Client
+        SOAP_CLIENT[SOAP Client]
+    end
+
+    subgraph EWS_Service[EWS SOAP Service]
+        subgraph Endpoint
+            BOOTSTRAP[Bootstrap]
+            WSDL[WSDL Endpoint<br/>:8088/PriceService?wsdl]
+        end
+        
+        subgraph Service_Layer[Service Layer]
+            PS_INTF[PriceService<br/>Interface]
+            PS_IMPL[PriceServiceImpl]
+        end
+        
+        subgraph Model_Layer[Model Layer]
+            PR_REQ[PriceRequest]
+            PR_RES[PriceResponse]
+            FAULT[EwsFault]
+        end
+        
+        subgraph DAO_Layer[Data Access Layer]
+            ORACLE_DAO[OracleDao]
+        end
+    end
+
+    subgraph Database[Oracle Database]
+        LIST_PRICE[(LIST_PRICE)]
+        PRICE_JOB[(PRICE_JOB)]
+    end
+
+    SOAP_CLIENT -->|SOAP Request| WSDL
+    BOOTSTRAP --> PS_IMPL
+    PS_IMPL --> PS_INTF
+    PS_IMPL --> PR_REQ
+    PS_IMPL --> PR_RES
+    PS_IMPL --> FAULT
+    PS_IMPL --> ORACLE_DAO
+    ORACLE_DAO -->|JDBC| LIST_PRICE
+    PS_IMPL -->|Insert Job| PRICE_JOB
+```
+
+## Sequence Diagram - GetPrice
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant PriceService
+    participant PriceServiceImpl
+    participant OracleDao
+    participant Oracle DB
+
+    Client->>PriceService: GetPrice(PriceRequest)
+    PriceService->>PriceServiceImpl: getPrice(request)
+    PriceServiceImpl->>OracleDao: findPrices(sku, market)
+    OracleDao->>Oracle DB: SELECT FROM LIST_PRICE
+    Oracle DB-->>OracleDao: ResultSet
+    OracleDao-->>PriceServiceImpl: List<PriceResponse>
+    PriceServiceImpl-->>PriceService: List<PriceResponse>
+    PriceService-->>Client: GetPriceResponse
+```
+
+## Sequence Diagram - SubmitPriceJob
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant PriceService
+    participant PriceServiceImpl
+
+    Client->>PriceService: SubmitPriceJob(market)
+    PriceService->>PriceServiceImpl: submitPriceJob(market)
+    Note over PriceServiceImpl: Generate UUID job ID
+    PriceServiceImpl-->>PriceService: "JOB-{uuid}"
+    PriceService-->>Client: SubmitPriceJobResponse
+```

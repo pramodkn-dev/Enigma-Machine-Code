@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="http://hp.com/ews/price/1">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <tns:SubmitPriceJobResponse>
+      <return>JOB-550e8400-e29b-41d4-a716-446655440000</return>
+    </tns:SubmitPriceJobResponse>
+  </soapenv:Body>
+</soapenv:Envelope>

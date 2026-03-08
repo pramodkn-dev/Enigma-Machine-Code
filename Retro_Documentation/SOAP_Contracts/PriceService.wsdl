@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://hp.com/ews/price/1"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             name="PriceService"
+             targetNamespace="http://hp.com/ews/price/1">
+
+  <!-- Types -->
+  <types>
+    <xsd:schema targetNamespace="http://hp.com/ews/price/1">
+      
+      <!-- PriceRequest -->
+      <xsd:complexType name="PriceRequest">
+        <xsd:sequence>
+          <xsd:element name="sku" type="xsd:string" minOccurs="1"/>
+          <xsd:element name="market" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="currency" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="effectiveDate" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- PriceResponse -->
+      <xsd:complexType name="PriceResponse">
+        <xsd:sequence>
+          <xsd:element name="sku" type="xsd:string"/>
+          <xsd:element name="currency" type="xsd:string"/>
+          <xsd:element name="price" type="xsd:string"/>
+          <xsd:element name="effectiveDate" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- PriceResponseList (for GetPrice operation) -->
+      <xsd:complexType name="PriceResponseList">
+        <xsd:sequence>
+          <xsd:element name="price" type="tns:PriceResponse" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- EwsFault -->
+      <xsd:complexType name="EwsFault">
+        <xsd:sequence>
+          <xsd:element name="code" type="xsd:string"/>
+          <xsd:element name="message" type="xsd:string"/>
+          <xsd:element name="correlationId" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- GetPrice Request/Response wrappers -->
+      <xsd:element name="GetPriceRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="request" type="tns:PriceRequest"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetPriceResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="return" type="tns:PriceResponseList"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- SubmitPriceJob Request/Response wrappers -->
+      <xsd:element name="SubmitPriceJobRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="market" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="SubmitPriceJobResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="return" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- Fault element -->
+      <xsd:element name="EwsFault" type="tns:EwsFault"/>
+
+    </xsd:schema>
+  </types>
+
+  <!-- Messages -->
+  <message name="GetPriceRequest">
+    <part name="parameters" element="tns:GetPriceRequest"/>
+  </message>
+  <message name="GetPriceResponse">
+    <part name="parameters" element="tns:GetPriceResponse"/>
+  </message>
+  <message name="SubmitPriceJobRequest">
+    <part name="parameters" element="tns:SubmitPriceJobRequest"/>
+  </message>
+  <message name="SubmitPriceJobResponse">
+    <part name="parameters" element="tns:SubmitPriceJobResponse"/>
+  </message>
+  <message name="EwsFaultMessage">
+    <part name="fault" element="tns:EwsFault"/>
+  </message>
+
+  <!-- PortType -->
+  <portType name="PriceService">
+    <operation name="GetPrice">
+      <input message="tns:GetPriceRequest"/>
+      <output message="tns:GetPriceResponse"/>
+      <fault name="EwsFault" message="tns:EwsFaultMessage"/>
+    </operation>
+    <operation name="SubmitPriceJob">
+      <input message="tns:SubmitPriceJobRequest"/>
+      <output message="tns:SubmitPriceJobResponse"/>
+      <fault name="EwsFault" message="tns:EwsFaultMessage"/>
+    </operation>
+  </portType>
+
+  <!-- Binding -->
+  <binding name="PriceServiceSoapBinding" type="tns:PriceService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="GetPrice">
+      <soap:operation soapAction="GetPrice"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+      <fault name="EwsFault"><soap:fault name="EwsFault" use="literal"/></fault>
+    </operation>
+    <operation name="SubmitPriceJob">
+      <soap:operation soapAction="SubmitPriceJob"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+      <fault name="EwsFault"><soap:fault name="EwsFault" use="literal"/></fault>
+    </operation>
+  </binding>
+
+  <!-- Service -->
+  <service name="PriceService">
+    <port name="PriceServicePort" binding="tns:PriceServiceSoapBinding">
+      <soap:address location="http://localhost:8088/PriceService"/>
+    </port>
+  </service>
+
+</definitions>

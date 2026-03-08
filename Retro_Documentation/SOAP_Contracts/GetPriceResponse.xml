@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="http://hp.com/ews/price/1">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <tns:GetPriceResponse>
+      <return>
+        <price>
+          <sku>SKU-1000</sku>
+          <currency>USD</currency>
+          <price>129.99</price>
+          <effectiveDate>2025-01-01</effectiveDate>
+        </price>
+        <price>
+          <sku>SKU-1000</sku>
+          <currency>USD</currency>
+          <price>119.99</price>
+          <effectiveDate>2024-12-01</effectiveDate>
+        </price>
+      </return>
+    </tns:GetPriceResponse>
+  </soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="http://hp.com/ews/price/1">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <soapenv:Fault>
+      <faultcode>soapenv:Server</faultcode>
+      <faultstring>Service error occurred</faultstring>
+      <detail>
+        <tns:EwsFault>
+          <code>ERR-001</code>
+          <message>Invalid SKU provided</message>
+          <correlationId>corr-12345-abcde</correlationId>
+        </tns:EwsFault>
+      </detail>
+    </soapenv:Fault>
+  </soapenv:Body>
+</soapenv:Envelope>
